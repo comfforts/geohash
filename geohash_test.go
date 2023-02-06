@@ -17,7 +17,37 @@ const (
 	LONGITUDE_RESOLUTION = 0.088
 )
 
-func TestEncodingResolution(t *testing.T) {
+func TestGeoHasherTalwar(t *testing.T) {
+	for scenario, fn := range map[string]func(
+		t *testing.T,
+		gh GeoHash,
+	){
+		"encoding resolution test succeeds":        testEncodingResolution,
+		"encoding resolution change test succeeds": testEncodingResolutionChange,
+	} {
+		t.Run(scenario, func(t *testing.T) {
+			gh, teardown := setupGeoHasher(t, TALWAR)
+			defer teardown()
+			fn(t, gh)
+		})
+	}
+}
+
+func setupGeoHasher(t *testing.T, ht HashStrategy) (
+	gh GeoHash,
+	teardown func(),
+) {
+	t.Helper()
+
+	gh, err := NewGeoHasher(ht)
+	require.NoError(t, err)
+
+	return gh, func() {
+		t.Logf(" geo hasher test ended, will cleanup")
+	}
+}
+
+func testEncodingResolution(t *testing.T, gh GeoHash) {
 	points := []geocode.Point{
 		{Latitude: 0.133333, Longitude: 117.500000},
 		{Latitude: -33.918861, Longitude: 18.423300},
@@ -26,15 +56,16 @@ func TestEncodingResolution(t *testing.T) {
 	}
 
 	for _, point := range points {
-		hash, _ := Encode(point.Latitude, point.Longitude, 12)
-		bound, err := Decode(hash)
+		hash, _ := gh.Encode(point.Latitude, point.Longitude, 12)
+		bound, err := gh.Decode(hash)
 		require.NoError(t, err)
 
 		require.Equal(t, true, math.Abs(bound.Latitude.Max-bound.Latitude.Min) < LATITUDE_RESOLUTION)
 		require.Equal(t, true, math.Abs(bound.Longitude.Max-bound.Longitude.Min) < LONGITUDE_RESOLUTION)
 	}
 }
-func TestEncodingResolutionChange(t *testing.T) {
+
+func testEncodingResolutionChange(t *testing.T, gh GeoHash) {
 	point := geocode.Point{Latitude: 42.713456, Longitude: -79.819675}
 
 	res := map[string][]geocode.Point{}
@@ -43,7 +74,7 @@ func TestEncodingResolutionChange(t *testing.T) {
 	cn := 0
 	for n < 10 {
 		// get hash
-		hash, _ := Encode(point.Latitude, point.Longitude, 12)
+		hash, _ := gh.Encode(point.Latitude, point.Longitude, 12)
 		_, ok := res[hash]
 		if !ok {
 			res[hash] = []geocode.Point{}
@@ -52,7 +83,7 @@ func TestEncodingResolutionChange(t *testing.T) {
 		cn++
 
 		// move latitude and get hash
-		hash, _ = Encode(point.Latitude+0.045, point.Longitude, 12)
+		hash, _ = gh.Encode(point.Latitude+0.045, point.Longitude, 12)
 		_, ok = res[hash]
 		if !ok {
 			res[hash] = []geocode.Point{}
@@ -64,7 +95,7 @@ func TestEncodingResolutionChange(t *testing.T) {
 		cn++
 
 		// move longitude and get hash
-		hash, _ = Encode(point.Latitude, point.Longitude+0.09, 12)
+		hash, _ = gh.Encode(point.Latitude, point.Longitude+0.09, 12)
 		_, ok = res[hash]
 		if !ok {
 			res[hash] = []geocode.Point{}
