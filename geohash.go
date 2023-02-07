@@ -5,6 +5,7 @@ import (
 	"github.com/comfforts/geocode"
 
 	"github.com/comfforts/geohash/pkg/talwar"
+	"github.com/comfforts/geohash/pkg/veness"
 )
 
 type HashStrategy string
@@ -22,7 +23,7 @@ type GeoHash interface {
 func NewGeoHasher(strategy HashStrategy) (GeoHash, error) {
 	switch strategy {
 	case VENESS:
-		return talwar.NewGeoCoder(), nil
+		return veness.NewGeoCoder(), nil
 	case TALWAR:
 		return talwar.NewGeoCoder(), nil
 	default:
