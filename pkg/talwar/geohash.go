@@ -3,7 +3,6 @@ package talwar
 import (
 	"fmt"
 
-	"github.com/comfforts/errors"
 	"github.com/comfforts/geocode"
 
 	"github.com/comfforts/geohash/pkg/constants"
@@ -24,14 +23,20 @@ func NewGeoCoder() *geoCoder {
 }
 
 func (gc *geoCoder) Encode(lat float64, lon float64, percision int) (string, error) {
+
+	if lat < constants.LAT_MIN || lat > constants.LAT_MAX || lon < constants.LON_MIN || lon > constants.LON_MAX {
+		return "", constants.ErrInvalidLatLong
+	}
+
+	if percision < 1 || percision > 12 {
+		percision = 12
+	}
+
 	var hash string
 	var latMin float64 = constants.LAT_MIN
 	var latMax float64 = constants.LAT_MAX
 	var lonMin float64 = constants.LON_MIN
 	var lonMax float64 = constants.LON_MAX
-	if percision > 12 {
-		percision = 12
-	}
 
 	for len(hash) < percision {
 		var quad string
@@ -59,14 +64,13 @@ func (gc *geoCoder) Encode(lat float64, lon float64, percision int) (string, err
 }
 
 func (gc *geoCoder) Decode(hash string) (*geocode.RangeBounds, error) {
-	boundaries, err := gc.bounds(hash)
-	if err != nil {
-		return nil, errors.NewAppError(constants.ERROR_DECODING_BOUNDS)
-	}
-	return boundaries, nil
+	return gc.bounds(hash)
 }
 
 func (gc *geoCoder) bounds(hash string) (*geocode.RangeBounds, error) {
+	if len(hash) == 0 {
+		return nil, constants.ErrInvalidGeocode
+	}
 	var latMin float64 = constants.LAT_MIN
 	var latMax float64 = constants.LAT_MAX
 	var lonMin float64 = constants.LON_MIN

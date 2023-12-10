@@ -3,7 +3,6 @@ package veness
 import (
 	"strings"
 
-	"github.com/comfforts/errors"
 	"github.com/comfforts/geocode"
 	"github.com/comfforts/geohash/pkg/constants"
 )
@@ -19,10 +18,10 @@ func NewGeoCoder() *geoCoder {
 }
 
 func (gc *geoCoder) Encode(lat float64, lon float64, percision int) (string, error) {
-	if lat == 0 || lon == 0 {
-		return "", errors.NewAppError("missing lat/long values")
+	if lat < constants.LAT_MIN || lat > constants.LAT_MAX || lon < constants.LON_MIN || lon > constants.LON_MAX {
+		return "", constants.ErrInvalidLatLong
 	}
-	if percision == 0 {
+	if percision < 1 || percision > 12 {
 		percision = 12
 	}
 
@@ -80,7 +79,7 @@ func (gc *geoCoder) Decode(hash string) (*geocode.RangeBounds, error) {
 
 func (gc *geoCoder) bounds(hash string) (*geocode.RangeBounds, error) {
 	if len(hash) < 1 {
-		return nil, errors.NewAppError("invalid hash")
+		return nil, constants.ErrInvalidGeocode
 	}
 
 	hash = strings.ToLower(hash)
@@ -92,7 +91,7 @@ func (gc *geoCoder) bounds(hash string) (*geocode.RangeBounds, error) {
 		ch := string(hash[i])
 		idx := strings.Index(gc.seed, ch)
 		if idx < 0 {
-			return nil, errors.NewAppError("invalid hash")
+			return nil, constants.ErrInvalidGeocode
 		}
 
 		for n := 4; n > 0; n-- {
