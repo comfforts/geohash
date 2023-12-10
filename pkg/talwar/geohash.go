@@ -24,6 +24,10 @@ func NewGeoCoder() *geoCoder {
 
 func (gc *geoCoder) Encode(lat float64, lon float64, percision int) (string, error) {
 
+	if lat == 0 || lon == 0 {
+		return "", constants.ErrInvalidLatLong
+	}
+
 	if lat < constants.LAT_MIN || lat > constants.LAT_MAX || lon < constants.LON_MIN || lon > constants.LON_MAX {
 		return "", constants.ErrInvalidLatLong
 	}

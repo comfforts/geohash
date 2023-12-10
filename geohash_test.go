@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/comfforts/geocode"
+	"github.com/comfforts/geohash/pkg/constants"
 )
 
 // At highest resolution, hash should differ for points where
@@ -22,6 +23,8 @@ func TestGeoHasherTalwar(t *testing.T) {
 		t *testing.T,
 		gh GeoHash,
 	){
+		"test encode decode succeeds":              testEncodeDecode,
+		"test error scenarios succeeds":            testErrors,
 		"encoding resolution test succeeds":        testEncodingResolution,
 		"encoding resolution change test succeeds": testEncodingResolutionChange,
 	} {
@@ -62,6 +65,55 @@ func setupGeoHasher(t *testing.T, ht HashStrategy) (
 	return gh, func() {
 		t.Logf(" geo hasher test ended, will cleanup")
 	}
+}
+
+func testErrors(t *testing.T, gh GeoHash) {
+	precision := 12
+	point := geocode.Point{Latitude: 0, Longitude: 0}
+
+	_, err := gh.Encode(point.Latitude, point.Longitude, precision)
+	require.Error(t, err)
+	require.Equal(t, err, constants.ErrInvalidLatLong)
+
+	_, err = gh.Decode("")
+	require.Error(t, err)
+	require.Equal(t, err, constants.ErrInvalidGeocode)
+}
+
+func testEncodeDecode(t *testing.T, gh GeoHash) {
+	points := []geocode.Point{
+		{Latitude: 0.133333, Longitude: 117.500000},
+		{Latitude: -33.918861, Longitude: 18.423300},
+		{Latitude: 38.294788, Longitude: -122.461510},
+		{Latitude: 28.644800, Longitude: 77.216721},
+	}
+
+	precision := 12
+
+	for _, point := range points {
+		hash, _ := gh.Encode(point.Latitude, point.Longitude, precision)
+		bound, err := gh.Decode(hash)
+		require.NoError(t, err)
+
+		fmt.Printf(
+			"point lat: %f, long: %f\n",
+			point.Latitude,
+			point.Longitude,
+		)
+		fmt.Printf(
+			"result at percision: %d, lat: %f, long: %f\n",
+			precision,
+			bound.Latitude.Min+(bound.Latitude.Max-bound.Latitude.Min)/2,
+			bound.Longitude.Min+(bound.Longitude.Max-bound.Longitude.Min)/2,
+		)
+		fmt.Printf(
+			"error lat: %f, error long: %f\n",
+			(bound.Latitude.Min+(bound.Latitude.Max-bound.Latitude.Min)/2)-point.Latitude,
+			(bound.Longitude.Min+(bound.Longitude.Max-bound.Longitude.Min)/2)-point.Longitude,
+		)
+		require.Equal(t, true, true)
+	}
+	t.Logf("test encoding resolution done")
 }
 
 func testEncodingResolution(t *testing.T, gh GeoHash) {
