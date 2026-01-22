@@ -3,7 +3,7 @@ module github.com/comfforts/geohash
 go 1.24.7
 
 require (
-	github.com/comfforts/geocode v0.1.26
+	github.com/comfforts/geocode v0.1.27
 	github.com/stretchr/testify v1.11.1
 )
 
