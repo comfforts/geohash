@@ -32,7 +32,7 @@ func (gc *geoCoder) Encode(lat float64, lon float64, percision int) (string, err
 		return "", constants.ErrInvalidLatLong
 	}
 
-	if percision < 1 || percision > 12 {
+	if percision < 1 || percision > 15 {
 		percision = 12
 	}
 

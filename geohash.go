@@ -1,7 +1,8 @@
 package geohash
 
 import (
-	"github.com/comfforts/errors"
+	"errors"
+
 	"github.com/comfforts/geocode"
 
 	"github.com/comfforts/geohash/pkg/talwar"
@@ -27,6 +28,6 @@ func NewGeoHasher(strategy HashStrategy) (GeoHash, error) {
 	case TALWAR:
 		return talwar.NewGeoCoder(), nil
 	default:
-		return nil, errors.NewAppError("undefined strategy")
+		return nil, errors.New("undefined strategy")
 	}
 }

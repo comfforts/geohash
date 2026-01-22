@@ -1,6 +1,6 @@
 package constants
 
-import "github.com/comfforts/errors"
+import "errors"
 
 const (
 	ERROR_DECODING_BOUNDS string = "error decoding bounds"
@@ -16,7 +16,7 @@ const (
 )
 
 var (
-	ErrInvalidLatLong = errors.NewAppError(INVALID_LAT_LONG)
-	ErrDecodingBounds = errors.NewAppError(ERROR_DECODING_BOUNDS)
-	ErrInvalidGeocode = errors.NewAppError(INVALID_HASH)
+	ErrInvalidLatLong = errors.New(INVALID_LAT_LONG)
+	ErrDecodingBounds = errors.New(ERROR_DECODING_BOUNDS)
+	ErrInvalidGeocode = errors.New(INVALID_HASH)
 )
